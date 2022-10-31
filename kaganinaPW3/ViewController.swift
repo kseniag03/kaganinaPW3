@@ -126,6 +126,10 @@ extension UIColor {
     }
 }
 
+protocol ChangeColor {
+    func colorChange(to newColor: UIColor)
+}
+
 extension ColorPaletteView {
     private final class ColorSliderView: UIControl {
         private let slider = UISlider()
@@ -167,12 +171,27 @@ extension ColorPaletteView {
             self.value = slider.value
             sendActions(for: .touchDragInside)
         }
+        
+        func colorChange(to value: Float) {
+            self.value = value
+            self.slider.value = value
+            sendActions(for: .touchDragInside)
+        }
     }
 }
 
-final class ColorPaletteView: UIControl {
+final class ColorPaletteView: UIControl, ChangeColor {
+    private let defaultColor = UIColor.systemGray6
+    
     private let stackView = UIStackView()
     private(set) var chosenColor: UIColor = .systemGray6
+    
+    private var redControl = ColorSliderView(colorName: "R", value:
+                                                Float(UIColor.systemGray6.rgba.red))
+    private var greenControl = ColorSliderView(colorName: "G", value:
+                                                Float(UIColor.systemGray6.rgba.green))
+    private var blueControl = ColorSliderView(colorName: "B", value:
+                                                Float(UIColor.systemGray6.rgba.blue))
     
     init() {
         super.init(frame: .zero)
@@ -185,10 +204,6 @@ final class ColorPaletteView: UIControl {
     }
     
     private func setupView() {
-        let redControl = ColorSliderView(colorName: "R", value: Float(chosenColor.rgba.red))
-        let greenControl = ColorSliderView(colorName: "G", value: Float(chosenColor.rgba.green))
-        let blueControl = ColorSliderView(colorName: "B", value: Float(chosenColor.rgba.blue))
-        
         redControl.tag = 0
         greenControl.tag = 1
         blueControl.tag = 2
@@ -239,6 +254,14 @@ final class ColorPaletteView: UIControl {
             )
         }
         sendActions(for: .touchDragInside)
+    }
+    
+    func colorChange(to newColor: UIColor) {
+        self.chosenColor = newColor
+        
+        self.redControl.colorChange(to: Float(newColor.rgba.red))
+        self.greenControl.colorChange(to: Float(newColor.rgba.green))
+        self.blueControl.colorChange(to: Float(newColor.rgba.blue))
     }
 }
 
@@ -432,10 +455,10 @@ final class WelcomeViewController: UIViewController {
         colorPaletteView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            colorPaletteView.topAnchor.constraint(equalTo: incrementButton.bottomAnchor, constant: 10),
+            colorPaletteView.topAnchor.constraint(equalTo: incrementButton.bottomAnchor, constant: 5),
             colorPaletteView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: self.view.viewWidth / 30),
             colorPaletteView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -self.view.viewWidth / 30),
-            colorPaletteView.bottomAnchor.constraint(equalTo: buttonsSV.topAnchor, constant: -10)
+            colorPaletteView.bottomAnchor.constraint(equalTo: buttonsSV.topAnchor, constant: -1)
             ])
         
         colorPaletteView.addTarget(self, action:
@@ -444,17 +467,19 @@ final class WelcomeViewController: UIViewController {
     
     @objc
     private func makeBlackBackground() {
-        self.view.backgroundColor = UIColor(
+        let color = UIColor(
             red: 0,
             green: 0,
             blue: 0,
             alpha: 1
             )
+        self.view.backgroundColor = color
     }
     
     @objc
     private func paletteButtonPressed() {
         colorPaletteView.isHidden.toggle()
+        colorPaletteView.colorChange(to: self.view.backgroundColor ?? .systemGray6)
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
     }

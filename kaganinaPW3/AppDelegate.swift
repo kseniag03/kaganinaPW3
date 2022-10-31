@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  kaganinaPW3
 //
-//  Created by Юлия Бакурская on 28.10.2022.
+//  Created by Ксения Ганина on 28.10.2022.
 //
 
 import UIKit
@@ -33,4 +33,3 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
 }
-
