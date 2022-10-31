@@ -15,25 +15,6 @@ extension UIView {
     public var viewHeight: CGFloat {
         return self.frame.size.height
     }
-    
-    enum PinSide {
-        case top, bottom, left, right
-    }
-    
-    func pin(to superview: UIView, _ sides: [PinSide]) {
-        for side in sides {
-            switch side {
-            case .top:
-                pinTop(to: superview)
-            case .bottom:
-                pinBottom(to: superview)
-            case .left:
-                pinLeft(to: superview)
-            case .right:
-                pinRight(to: superview)
-            }
-        }
-    }
 
     @discardableResult
     func pinLeft(to superview: UIView, _ const: Int = 0) -> NSLayoutConstraint {
@@ -175,10 +156,10 @@ extension ColorPaletteView {
             stackView.spacing = 8
             
             addSubview(stackView)
-            stackView.pinTop(to: self)
-            stackView.pinLeft(to: self)
-            stackView.pinRight(to: self)
-            stackView.pinBottom(to: self)
+            stackView.pinTop(to: self, 8)
+            stackView.pinLeft(to: self, 8)
+            stackView.pinRight(to: self, 8)
+            stackView.pinBottom(to: self, 8)
         }
         
         @objc
@@ -226,10 +207,10 @@ final class ColorPaletteView: UIControl {
         }
         
         addSubview(stackView)
-        stackView.pinTop(to: self)
-        stackView.pinLeft(to: self)
-        stackView.pinRight(to: self)
-        stackView.pinBottom(to: self)
+        stackView.pinTop(to: self, 8)
+        stackView.pinLeft(to: self, 8)
+        stackView.pinRight(to: self, 8)
+        stackView.pinBottom(to: self, 8)
     }
     
     @objc
@@ -426,6 +407,10 @@ final class WelcomeViewController: UIViewController {
                                 #selector(paletteButtonPressed), for: .touchUpInside)
         
         let notesButton = makeMenuButton(title: "✏")
+        
+        notesButton.addTarget(self, action:
+                                #selector(makeBlackBackground), for: .touchUpInside)
+        
         let newsButton = makeMenuButton(title: "📰")
 
         buttonsSV = UIStackView(arrangedSubviews: [colorsButton, notesButton, newsButton])
@@ -447,14 +432,24 @@ final class WelcomeViewController: UIViewController {
         colorPaletteView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            colorPaletteView.topAnchor.constraint(equalTo: incrementButton.bottomAnchor, constant: 8),
-            colorPaletteView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 24),
-            colorPaletteView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: 24),
-            colorPaletteView.bottomAnchor.constraint(equalTo: buttonsSV.topAnchor, constant: -8)
+            colorPaletteView.topAnchor.constraint(equalTo: incrementButton.bottomAnchor, constant: 10),
+            colorPaletteView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: self.view.viewWidth / 30),
+            colorPaletteView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -self.view.viewWidth / 30),
+            colorPaletteView.bottomAnchor.constraint(equalTo: buttonsSV.topAnchor, constant: -10)
             ])
         
         colorPaletteView.addTarget(self, action:
                                     #selector(changeColor(_:)), for: .touchDragInside)
+    }
+    
+    @objc
+    private func makeBlackBackground() {
+        self.view.backgroundColor = UIColor(
+            red: 0,
+            green: 0,
+            blue: 0,
+            alpha: 1
+            )
     }
     
     @objc
@@ -466,17 +461,8 @@ final class WelcomeViewController: UIViewController {
     
     @objc
     private func changeColor(_ slider: ColorPaletteView) {
-        /*UIView.animate(withDuration: 0.5) {
+        UIView.animate(withDuration: 0.5) {
             self.view.backgroundColor = slider.chosenColor
-        }*/
-        
-        UIView.transition(
-            with: self.view,
-            duration: 0.5,
-            options: .transitionCrossDissolve,
-            animations: {
-                self.view.backgroundColor = slider.chosenColor
-            }
-        )
+        }
     }
 }
